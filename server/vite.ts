@@ -22,7 +22,10 @@ export function log(message: string, source = "express") {
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
-    hmr: { server },
+    // Force HMR to bind to IPv4 loopback on Windows machines that
+    // don't support IPv6 `::1`. This prevents errors like:
+    // Error: listen ENOTSUP: operation not supported on socket ::1:5053
+    hmr: { server, host: "127.0.0.1" },
     allowedHosts: true as const,
   };
 
@@ -68,11 +71,13 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // The Vite build outputs to the repo-level `dist/public` directory.
+  // Resolve relative to the repo root (one level up from `server/`).
+  const distPath = path.resolve(import.meta.dirname, "..", "dist", "public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Could not find the build directory: ${distPath}, make sure to run: npm run build`,
     );
   }
 
