@@ -28,6 +28,8 @@
 - Vite integration
   - `server/vite.ts` mounts Vite middleware in dev mode and also provides `serveStatic` for production.
   - The Vite build config (`vite.config.ts`) sets `root` to `client/` and `build.outDir` to `dist/public` at repo root. Note: `server/vite.ts` looks for a `public` folder relative to `server/` when serving static files — be mindful of this mismatch when diagnosing production asset issues.
+  
+    - IPv4 / HMR note: on some Windows hosts IPv6 (`::1`) or certain socket options may cause ENOTSUP or bind errors. The server and Vite HMR are configured to bind explicitly to `127.0.0.1` to avoid this; follow that pattern when adding dev server or HMR settings.
 
 - API surface & storage
   - `server/routes.ts` is where API routes should be registered (all routes intended to be under `/api`).
@@ -55,6 +57,7 @@
 - Building for production: `npm run build` then `npm run start`. If the server cannot find client assets in production, check the build output path (`dist/public`) and `server/vite.ts`'s `serveStatic` path described above.
 
 - Environment & ports: The server binds to the port in `PORT` or defaults to 5000. In production, ensure `PORT` is set to the correct public port.
+  - Environment & ports: The server binds to the port in `PORT` or defaults to 5053 (the code defaults to 5053). In production, ensure `PORT` is set to the correct public port. Note: bind explicitly to `127.0.0.1` (IPv4) rather than `localhost` to avoid IPv6-related ENOTSUP errors on some Windows hosts.
 
 - Windows users: package.json uses `NODE_ENV=...` inline. On Windows PowerShell use `$env:NODE_ENV='value'; <cmd>` or run scripts via a POSIX-compatible shell.
 
